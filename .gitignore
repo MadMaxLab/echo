@@ -29,3 +29,6 @@ build/
 
 ### VS Code ###
 .vscode/
+/echo-core/mvnw
+/echo-core/mvnw.cmd
+/echo-core/.mvn/
