@@ -1,16 +1,19 @@
 package io.github.madmaxlab.echocore.controller;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.ByteBufferInput;
+import io.github.madmaxlab.echocore.DTO.MessageDTO;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.objenesis.strategy.StdInstantiatorStrategy;
 
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.BrokenBarrierException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 
 @ClientEndpoint
 @Setter
@@ -18,7 +21,6 @@ import java.util.concurrent.CyclicBarrier;
 @Slf4j
 public class WebSocketClient {
 
-    private WebSocketControllerTest webSocketControllerTest;
     private String answer = null;
     private Session currentSession;
     private CountDownLatch latch;
@@ -50,12 +52,26 @@ public class WebSocketClient {
     @OnError
     public void onError(Throwable error) {
         log.error("Catch an error from WebSocket Server", error);
+        latch.countDown();
     }
 
     @OnMessage
     public void onMessage(String message, Session session) {
         log.info("Client receive a new message:  " + message);
         answer = message;
+        latch.countDown();
+    }
+
+    @OnMessage
+    public void onBinaryMessage(ByteBuffer message, Session session) {
+        log.info("Client receive a new binary message");
+        Kryo kryo = new Kryo();
+        kryo.register(MessageDTO.class);
+        kryo.setInstantiatorStrategy(new Kryo.DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
+        try (ByteBufferInput bbi = new ByteBufferInput(message)) {
+            answer = kryo.readObject(bbi, MessageDTO.class).getText();
+            log.info("The answer is : " + answer);
+        }
         latch.countDown();
     }
 }
