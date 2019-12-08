@@ -13,4 +13,6 @@ public interface UserDAO {
 
     void deleteById(UUID id);
 
+    long getCountByLogin(String login);
+
 }

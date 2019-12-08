@@ -2,17 +2,18 @@ package io.github.madmaxlab.echocore.service;
 
 import io.github.madmaxlab.echocore.dao.UserDAO;
 import io.github.madmaxlab.echocore.entity.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
-
-    private UserDAO userDAO;
+    private final UserDAO userDAO;
 
     public UserServiceImpl(@Autowired UserDAO userDAO) {
         this.userDAO = userDAO;
@@ -25,7 +26,12 @@ public class UserServiceImpl implements UserService {
             //TODO: create an  exception class
             throw new RuntimeException("It's not acceptable to create a user with UUID generated on the client side");
         }
+        if (userDAO.getCountByLogin(user.getLogin()) != 0) {
+            throw new RuntimeException(
+                    String.format("The user with login %s already exist. Please try another login" , user.getLogin()));
+        }
         userDAO.save(user);
+        log.info(String.format("A new user was created! User id : %s, User login : %s", user.getId(), user.getLogin()));
     }
 
     @Override
