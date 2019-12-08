@@ -10,11 +10,14 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 public class MessageDTO {
-
     private UUID id;
 
-    MessageType messageType;
+    private MessageType messageType;
 
-    String text;
+    private String text;
+
+    private String from;
+
+    private String name;
 
 }

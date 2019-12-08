@@ -1,6 +1,6 @@
 package io.github.madmaxlab.echocore.config;
 
-import io.github.madmaxlab.echocore.controller.echoWebSocketHandler;
+import io.github.madmaxlab.echocore.controller.EchoWebSocketHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketHandler;
@@ -20,6 +20,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Bean
     public WebSocketHandler echoHandler() {
-        return new echoWebSocketHandler();
+        return new EchoWebSocketHandler();
     }
 }
