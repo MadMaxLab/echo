@@ -65,12 +65,22 @@ public class WebSocketClient {
     @OnMessage
     public void onBinaryMessage(ByteBuffer message, Session session) {
         log.info("Client receive a new binary message");
+
+        // TODO change kryo to kryoPool(KryoPool as KryoService)
         Kryo kryo = new Kryo();
         kryo.register(MessageDTO.class);
         kryo.setInstantiatorStrategy(new Kryo.DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
         try (ByteBufferInput bbi = new ByteBufferInput(message)) {
-            answer = kryo.readObject(bbi, MessageDTO.class).getText();
-            log.info("The answer is : " + answer);
+            MessageDTO messageDTO = kryo.readObject(bbi, MessageDTO.class);
+            switch (messageDTO.getMessageType()){
+                case GREETINGS:
+                    answer = messageDTO.getText();
+                    log.info("The answer is : " + answer);
+                    break;
+                case CONFIRM:
+                    answer = "OK";
+                    log.info("Client: Registration is confirmed");
+            }
         }
         latch.countDown();
     }
