@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.objenesis.strategy.StdInstantiatorStrategy;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.jdbc.Sql;
 
 import javax.websocket.CloseReason;
 import java.io.ByteArrayOutputStream;
@@ -61,6 +63,7 @@ class WebSocketControllerTest {
 
 
     @Test
+    @Sql("/reset-data.sql")
     void registrationTest() throws IOException, InterruptedException{
         MessageDTO messageDTO = MessageDTO.builder()
                 .messageType(MessageType.REGISTRATION)
