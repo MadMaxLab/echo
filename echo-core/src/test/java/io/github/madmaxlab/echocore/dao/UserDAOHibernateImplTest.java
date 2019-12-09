@@ -16,8 +16,8 @@ class UserDAOHibernateImplTest {
     private final String USER1_NAME = "Test User 1";
     private final String USER1_LOGIN = "testlogin1";
     private final String USER1_PASSWORD = "password";
-    private final String USER_TO_SAVE_NAME = "Test User 1";
-    private final String USER_TO_SAVE_LOGIN = "testlogin1";
+    private final String USER_TO_SAVE_NAME = "Test User 3";
+    private final String USER_TO_SAVE_LOGIN = "testlogin3";
     private final String USER_TO_SAVE_PASSWORD = "password";
 
 
