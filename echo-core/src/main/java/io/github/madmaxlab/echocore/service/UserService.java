@@ -5,7 +5,6 @@ import io.github.madmaxlab.echocore.entity.User;
 import java.util.UUID;
 
 public interface UserService {
-
     void createUser(User user);
 
     void updateUser(User user);
@@ -13,4 +12,6 @@ public interface UserService {
     User getUserById(UUID id);
 
     void deleteUser(UUID id);
+
+    boolean authenticateUser(String login, String password);
 }

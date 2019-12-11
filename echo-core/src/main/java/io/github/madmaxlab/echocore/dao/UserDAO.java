@@ -15,4 +15,5 @@ public interface UserDAO {
 
     long getCountByLogin(String login);
 
+    User getUserByLogin(String login);
 }

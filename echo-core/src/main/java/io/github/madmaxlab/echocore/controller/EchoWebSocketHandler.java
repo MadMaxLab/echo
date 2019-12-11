@@ -53,6 +53,15 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
                     userService.createUser(newUser);
                     sendOK(session, kryo);
                     break;
+                case AUTHENTICATION:
+                    if (!userService.authenticateUser(receivedMessage.getFrom(), receivedMessage.getText())) {
+                        sendError(session, kryo, "Authentication failed. See server logs for details.");
+                    }
+                    //TODO get contacts
+                    // get last messages
+                    break;
+                    //TODO client init done message
+                    // register client session to session pool
             }
         }
     }
@@ -71,6 +80,15 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
         MessageDTO answer = MessageDTO.builder()
                 .id(UUID.randomUUID())
                 .messageType(MessageType.CONFIRM)
+                .build();
+        sendMessage(session, kryo, answer);
+    }
+
+    private void sendError(WebSocketSession session, Kryo kryo, String errorMessage) throws IOException {
+        MessageDTO answer = MessageDTO.builder()
+                .id(UUID.randomUUID())
+                .messageType(MessageType.ERROR)
+                .text(errorMessage)
                 .build();
         sendMessage(session, kryo, answer);
     }
@@ -96,6 +114,8 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
 
         log.info("Connection closed. Connection id: " + session.getId() + " Close status: " + status);
+
+        //TODO unregister session from user sessions storage
 
     }
 }

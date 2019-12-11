@@ -2,6 +2,7 @@ package io.github.madmaxlab.echocore.service;
 
 import io.github.madmaxlab.echocore.dao.UserDAO;
 import io.github.madmaxlab.echocore.entity.User;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,5 +57,21 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteUser(UUID id) {
         userDAO.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public boolean authenticateUser(String login, String password) {
+        User user = userDAO.getUserByLogin(login);
+        if (user == null) {
+            log.info("User %s dose not exist. Authentication failed.", login);
+            return false;
+        }
+        if (!user.getLogin().equals(password)) {
+            log.info("User %s is send a wrong password. Authentication failed.", login);
+            log.debug("The password is : '%s'", password);
+            return false;
+        }
+        return true;
     }
 }

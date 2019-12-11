@@ -53,4 +53,11 @@ public class UserDAOHibernateImpl implements UserDAO {
         query.setParameter("login", login);
         return query.getSingleResult();
     }
+
+    @Override
+    public User getUserByLogin(String login) {
+        Session session = entityManager.unwrap(Session.class);
+        Query<User> query = session.createQuery("SELECT u FROM User u where u.login=:login", User.class);
+        return query.getSingleResult();
+    }
 }
