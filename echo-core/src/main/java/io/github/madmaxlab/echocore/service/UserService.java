@@ -11,6 +11,8 @@ public interface UserService {
 
     User getUserById(UUID id);
 
+    User getUserByLogin(String login);
+
     void deleteUser(UUID id);
 
     boolean authenticateUser(String login, String password);

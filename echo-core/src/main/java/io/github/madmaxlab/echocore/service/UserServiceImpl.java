@@ -2,7 +2,6 @@ package io.github.madmaxlab.echocore.service;
 
 import io.github.madmaxlab.echocore.dao.UserDAO;
 import io.github.madmaxlab.echocore.entity.User;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,6 +57,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getUserByLogin(String login) {
+        User user = userDAO.getUserByLogin(login);
+        if (user == null){
+            throw new RuntimeException(String.format("Can't get user by login %s, user does not exist.", login));
+        }
+        return  user;
+    }
+
+    @Override
     @Transactional
     public void deleteUser(UUID id) {
         userDAO.deleteById(id);
@@ -68,14 +76,15 @@ public class UserServiceImpl implements UserService {
     public boolean authenticateUser(String login, String password) {
         User user = userDAO.getUserByLogin(login);
         if (user == null) {
-            log.info("User %s does not exist. Authentication failed.", login);
+            log.info("User {} does not exist. Authentication failed.", login);
             return false;
         }
-        if (!user.getLogin().equals(password)) {
-            log.info("User %s is send a wrong password. Authentication failed.", login);
-            log.debug("The password is : '%s'", password);
+        if (!user.getPassword().equals(password)) {
+            log.info("User {} is send a wrong password. Authentication failed.", login);
+            log.debug("The password is : '{}'", password);
             return false;
         }
+        log.debug("User {} authentication  success", user.getLogin());
         return true;
     }
 }
