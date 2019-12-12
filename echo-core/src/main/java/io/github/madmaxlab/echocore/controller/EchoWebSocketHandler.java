@@ -1,26 +1,27 @@
 package io.github.madmaxlab.echocore.controller;
 
 
-
+import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.ByteBufferInput;
 import com.esotericsoftware.kryo.io.Output;
 import io.github.madmaxlab.echocore.DTO.MessageDTO;
 import io.github.madmaxlab.echocore.DTO.MessageType;
+import io.github.madmaxlab.echocore.entity.Contact;
 import io.github.madmaxlab.echocore.entity.User;
+import io.github.madmaxlab.echocore.service.ContactService;
 import io.github.madmaxlab.echocore.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-
 import org.objenesis.strategy.StdInstantiatorStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
-import com.esotericsoftware.kryo.Kryo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -28,6 +29,9 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ContactService contactService;
 
 
     @Override
@@ -56,9 +60,15 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
                 case AUTHENTICATION:
                     if (!userService.authenticateUser(receivedMessage.getFrom(), receivedMessage.getText())) {
                         sendError(session, kryo, "Authentication failed. See server logs for details.");
+                        break;
                     }
-                    //TODO get contacts
-                    // get last messages
+                    List<Contact> contacts = contactService.getContactList(receivedMessage.getFrom());
+                    for (Contact contact :
+                            contacts) {
+                        sendContact(session, kryo, contact);
+                    }
+                    //TODO get last messages
+                    sendOK(session, kryo);
                     break;
                     //TODO client init done message
                     // register client session to session pool
@@ -100,6 +110,15 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
             ByteBuffer bb = ByteBuffer.wrap(output.getBuffer());
             session.sendMessage(new BinaryMessage(bb));
         }
+    }
+
+    private void sendContact(WebSocketSession session, Kryo kryo, Contact contact) throws IOException {
+        MessageDTO answer = MessageDTO.builder()
+                .id(UUID.randomUUID())
+                .messageType(MessageType.CONTACT)
+                .contact(contact)
+                .build();
+        sendMessage(session, kryo, answer);
     }
 
     private User convertMessageToNewUser(MessageDTO messageDTO) {

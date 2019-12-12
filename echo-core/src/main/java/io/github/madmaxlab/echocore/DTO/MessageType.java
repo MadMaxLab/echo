@@ -5,5 +5,6 @@ public enum MessageType {
     REGISTRATION,
     CONFIRM,
     ERROR,
-    AUTHENTICATION
+    AUTHENTICATION,
+    CONTACT
 }
