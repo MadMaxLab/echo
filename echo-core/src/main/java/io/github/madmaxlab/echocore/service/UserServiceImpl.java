@@ -50,7 +50,11 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User getUserById(UUID id) {
-        return userDAO.getById(id);
+        User user = userDAO.getById(id);
+        if (user == null){
+            throw new RuntimeException(String.format("Can't get user by id %s, user does not exist.", id));
+        }
+        return  user;
     }
 
     @Override
@@ -64,7 +68,7 @@ public class UserServiceImpl implements UserService {
     public boolean authenticateUser(String login, String password) {
         User user = userDAO.getUserByLogin(login);
         if (user == null) {
-            log.info("User %s dose not exist. Authentication failed.", login);
+            log.info("User %s does not exist. Authentication failed.", login);
             return false;
         }
         if (!user.getLogin().equals(password)) {
