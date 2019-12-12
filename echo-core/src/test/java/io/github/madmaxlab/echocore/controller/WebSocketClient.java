@@ -3,6 +3,7 @@ package io.github.madmaxlab.echocore.controller;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.ByteBufferInput;
 import io.github.madmaxlab.echocore.DTO.MessageDTO;
+import io.github.madmaxlab.echocore.entity.Contact;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 @ClientEndpoint
@@ -24,6 +27,7 @@ public class WebSocketClient {
     private String answer = null;
     private Session currentSession;
     private CountDownLatch latch;
+    private List<Contact> contacts = new ArrayList<>();
 
     public WebSocketClient(String url, CountDownLatch latch) {
         try {
@@ -47,6 +51,7 @@ public class WebSocketClient {
     @OnClose
     public void onClose(Session session) {
         log.info("Client session is close. Session id: " + session.getId());
+        latch.countDown();
     }
 
     @OnError
@@ -66,7 +71,6 @@ public class WebSocketClient {
     public void onBinaryMessage(ByteBuffer message, Session session) {
         log.info("Client receive a new binary message");
 
-        // TODO change kryo to kryoPool(KryoPool as KryoService)
         Kryo kryo = new Kryo();
         kryo.register(MessageDTO.class);
         kryo.setInstantiatorStrategy(new Kryo.DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
@@ -75,13 +79,26 @@ public class WebSocketClient {
             switch (messageDTO.getMessageType()){
                 case GREETINGS:
                     answer = messageDTO.getText();
-                    log.info("The answer is : " + answer);
+                    log.info("Client: The answer is : " + answer);
+                    latch.countDown();
                     break;
                 case CONFIRM:
                     answer = "OK";
-                    log.info("Client: Registration is confirmed");
+                    log.info("Client: Action is confirmed from server");
+                    latch.countDown();
+                    break;
+                case CONTACT:
+                    contacts.add(messageDTO.getContact());
+                    log.info("Client: Received a new contact: {}", messageDTO.getContact());
+                    break;
+                case ERROR:
+                    answer = "ERROR";
+                    log.warn("Client: Receive an error message DTO from server. Error message is: {}",
+                            messageDTO.getText());
+                    latch.countDown();
+                    break;
             }
         }
-        latch.countDown();
+
     }
 }

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.objenesis.strategy.StdInstantiatorStrategy;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.jdbc.Sql;
 
 import javax.websocket.CloseReason;
@@ -76,6 +75,36 @@ class WebSocketControllerTest {
         closeSession();
 
         assertThat(client.getAnswer()).isEqualTo("OK");
+    }
+
+    @Test
+    @Sql("/reset-data.sql")
+    void authenticationTest() throws IOException, InterruptedException{
+        MessageDTO messageDTO = MessageDTO.builder()
+                .messageType(MessageType.AUTHENTICATION)
+                .from("mylogin")
+                .text("password")
+                .build();
+        sendMessage(messageDTO);
+        latch.await();
+        closeSession();
+
+        assertThat(client.getAnswer()).isEqualTo("OK");
+    }
+
+    @Test
+    @Sql("/reset-data.sql")
+    void authenticationFailTest() throws IOException, InterruptedException{
+        MessageDTO messageDTO = MessageDTO.builder()
+                .messageType(MessageType.AUTHENTICATION)
+                .from("mylogin")
+                .text("Wrong password!")
+                .build();
+        sendMessage(messageDTO);
+        latch.await();
+        closeSession();
+
+        assertThat(client.getAnswer()).isEqualTo("ERROR");
     }
 
     private void sendMessage(MessageDTO message) throws IOException {
