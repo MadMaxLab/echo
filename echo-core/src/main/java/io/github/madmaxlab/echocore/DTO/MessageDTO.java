@@ -19,6 +19,8 @@ public class MessageDTO {
 
     private String from;
 
+    private String to;
+
     private String name;
 
     private Contact contact;

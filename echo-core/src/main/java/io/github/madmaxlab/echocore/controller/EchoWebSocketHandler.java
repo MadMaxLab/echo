@@ -7,8 +7,10 @@ import com.esotericsoftware.kryo.io.Output;
 import io.github.madmaxlab.echocore.DTO.MessageDTO;
 import io.github.madmaxlab.echocore.DTO.MessageType;
 import io.github.madmaxlab.echocore.entity.Contact;
+import io.github.madmaxlab.echocore.entity.Message;
 import io.github.madmaxlab.echocore.entity.User;
 import io.github.madmaxlab.echocore.service.ContactService;
+import io.github.madmaxlab.echocore.service.MessageService;
 import io.github.madmaxlab.echocore.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.objenesis.strategy.StdInstantiatorStrategy;
@@ -32,6 +34,9 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
 
     @Autowired
     private ContactService contactService;
+
+    @Autowired
+    private MessageService messageService;
 
 
     @Override
@@ -67,9 +72,16 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
                             contacts) {
                         sendContact(session, kryo, contact);
                     }
-                    //TODO get last messages
+                    List<Message> messages = messageService.getUserMessages(receivedMessage.getFrom());
+                    for (Message m :
+                            messages) {
+                        sendTextMessage(session, kryo, m);
+                    }
                     sendOK(session, kryo);
                     break;
+
+                    //TODO we need to receive a delivery message state by client and save it to db
+
                     //TODO client init done message
                     // register client session to session pool
             }
@@ -117,6 +129,17 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
                 .id(UUID.randomUUID())
                 .messageType(MessageType.CONTACT)
                 .contact(contact)
+                .build();
+        sendMessage(session, kryo, answer);
+    }
+
+    private void sendTextMessage(WebSocketSession session, Kryo kryo, Message message) throws IOException {
+        MessageDTO answer = MessageDTO.builder()
+                .id(UUID.randomUUID())
+                .messageType(MessageType.TEXT)
+                .from(message.getSender().getLogin())
+                .to(message.getReceiver().getLogin())
+                .text(message.getText())
                 .build();
         sendMessage(session, kryo, answer);
     }
