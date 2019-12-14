@@ -90,6 +90,7 @@ class WebSocketControllerTest {
         closeSession();
 
         assertThat(client.getAnswer()).isEqualTo("OK");
+        // TODO Add contacts and text messages count and field verification
     }
 
     @Test

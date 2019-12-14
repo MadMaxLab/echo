@@ -28,6 +28,7 @@ public class WebSocketClient {
     private Session currentSession;
     private CountDownLatch latch;
     private List<Contact> contacts = new ArrayList<>();
+    private int chatMessageCount = 0;
 
     public WebSocketClient(String url, CountDownLatch latch) {
         try {
@@ -90,6 +91,10 @@ public class WebSocketClient {
                 case CONTACT:
                     contacts.add(messageDTO.getContact());
                     log.info("Client: Received a new contact: {}", messageDTO.getContact());
+                    break;
+                case TEXT:
+                    chatMessageCount++;
+                    log.info("Client: Receive a new chat message : {}", messageDTO);
                     break;
                 case ERROR:
                     answer = "ERROR";
