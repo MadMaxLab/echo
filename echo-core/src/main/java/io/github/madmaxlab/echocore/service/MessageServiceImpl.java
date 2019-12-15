@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class MessageServiceImpl implements MessageService{
@@ -29,5 +31,18 @@ public class MessageServiceImpl implements MessageService{
             return Collections.emptyList();
         }
         return messages;
+    }
+
+    @Override
+    public void saveTextMessage(String from, String to, String text) {
+        Message message = Message.builder()
+                .id(UUID.randomUUID())
+                .created(new Date())
+                .isDelivered(false)
+                .sender(userService.getUserByLogin(from))
+                .receiver(userService.getUserByLogin(to))
+                .text(text)
+                .build();
+        messageDAO.save(message);
     }
 }

@@ -11,6 +11,7 @@ import io.github.madmaxlab.echocore.entity.Message;
 import io.github.madmaxlab.echocore.entity.User;
 import io.github.madmaxlab.echocore.service.ContactService;
 import io.github.madmaxlab.echocore.service.MessageService;
+import io.github.madmaxlab.echocore.service.SessionService;
 import io.github.madmaxlab.echocore.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.objenesis.strategy.StdInstantiatorStrategy;
@@ -37,6 +38,9 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private SessionService sessionService;
 
 
     @Override
@@ -77,13 +81,19 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
                             messages) {
                         sendTextMessage(session, kryo, m);
                     }
+                    sessionService.save(receivedMessage.getFrom(), session);
                     sendOK(session, kryo);
                     break;
-
-                    //TODO we need to receive a delivery message state by client and save it to db
-
-                    //TODO client init done message
-                    // register client session to session pool
+                case TEXT:
+                    String sender = receivedMessage.getFrom();
+                    String receiver = receivedMessage.getTo();
+                    String text = receivedMessage.getText();
+                    messageService.saveTextMessage(sender, receiver, text);
+                    WebSocketSession receiverSession = sessionService.get(receivedMessage.getTo());
+                    if (receiverSession != null) {
+                        sendTextMessage(receiverSession, kryo, sender, receiver, text);
+                    }
+                    break;
             }
         }
     }
@@ -134,12 +144,23 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
     }
 
     private void sendTextMessage(WebSocketSession session, Kryo kryo, Message message) throws IOException {
+        sendTextMessage(
+                session,
+                kryo,
+                message.getSender().getLogin(),
+                message.getReceiver().getLogin(),
+                message.getText()
+        );
+    }
+
+    private void sendTextMessage(WebSocketSession session, Kryo kryo, String sender, String receiver, String text)
+            throws IOException {
         MessageDTO answer = MessageDTO.builder()
                 .id(UUID.randomUUID())
                 .messageType(MessageType.TEXT)
-                .from(message.getSender().getLogin())
-                .to(message.getReceiver().getLogin())
-                .text(message.getText())
+                .from(sender)
+                .to(receiver)
+                .text(text)
                 .build();
         sendMessage(session, kryo, answer);
     }
@@ -156,8 +177,7 @@ public class EchoWebSocketHandler extends BinaryWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
 
         log.info("Connection closed. Connection id: " + session.getId() + " Close status: " + status);
-
-        //TODO unregister session from user sessions storage
+        sessionService.delete(session);
 
     }
 }
