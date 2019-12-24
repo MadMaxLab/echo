@@ -1,0 +1,4 @@
+#chat {
+    width: 80%;
+    --vcf-chat-message-thread-height: 900px;
+}
