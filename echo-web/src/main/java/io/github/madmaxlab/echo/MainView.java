@@ -33,6 +33,7 @@ public class MainView extends VerticalLayout {
         MenuItem mainMenu = menu.addItem(new Icon(VaadinIcon.MENU));
         MenuItem profile = menu.addItem(new Icon(VaadinIcon.USER));
         MenuItem notifications = menu.addItem(new Icon(VaadinIcon.BELL));
+        profile.addClickListener(event -> menu.getUI().ifPresent(ui -> ui.navigate("registration")));
 
         add(menu);
         HorizontalLayout hLayout = new HorizontalLayout();
@@ -40,7 +41,6 @@ public class MainView extends VerticalLayout {
         Chat chat = new Chat();
         chat.setId("chat");
         chat.setLoading(false);
-        log.info("Chat is loading:{}",chat.isLoading());
         List<Message> messages = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
             messages.add( new Message("Hello World!", "", "DEREZA", false));
@@ -64,8 +64,9 @@ public class MainView extends VerticalLayout {
 
         LoginOverlay loginOverlay = new LoginOverlay(LoginI18n.createDefault());
         loginOverlay.setTitle("Echo Web Chat");
-        loginOverlay.setDescription("Echo is the best chat in the world!");
+        loginOverlay.setDescription("Пожалуй, лучший чат в мире!");
         loginOverlay.addLoginListener(event -> loginOverlay.close());
+        loginOverlay.setForgotPasswordButtonVisible(false);
         loginOverlay.setOpened(true);
     }
 
