@@ -27,7 +27,7 @@ import java.util.List;
 @CssImport("/styles/shared-styles.css")
 public class MainView extends VerticalLayout {
 
-    public MainView(@Autowired MessageBean bean) {
+    public MainView(@Autowired EchoWebSocketClient client) {
         MenuBar menu = new MenuBar();
         menu.addThemeVariants(MenuBarVariant.MATERIAL_OUTLINED);
         MenuItem mainMenu = menu.addItem(new Icon(VaadinIcon.MENU));
